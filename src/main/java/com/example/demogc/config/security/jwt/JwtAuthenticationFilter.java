@@ -1,7 +1,7 @@
 package com.example.demogc.config.security.jwt;
 
 import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,6 +17,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+
 /**
  * <h5>Filtro de autenticación basado en JWT (JSON Web Token).</h5>
  * <p>Esta clase intercepta cada request HTTP y se encarga de:</p>
@@ -26,16 +27,16 @@ import java.io.IOException;
  *     <li>3. Extraer el usuario.</li>
  *     <li>4. Cargar sus detalles.</li>
  *     <li>5. Autenticarlo en el contexto de Spring Security.</li>
- *</ul>
+ * </ul>
  * <p>--> Extiende 'OncePerRequestFilter', lo que garantiza que el filtro se ejecute una única vez por cada request.</p>
  */
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Value("${jwt.header.string}")
-    public String HEADER_STRING;
+    private String HEADER_STRING;
 
     @Value("${jwt.token.prefix}")
-    public String TOKEN_PREFIX;
+    private String TOKEN_PREFIX;
 
     @Autowired
     private UserDetailsService userDetailsService;
@@ -43,12 +44,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private TokenProvider jwtTokenUtil;
 
-    /** <h5>Se ejecuta en cada request HTTP.</h5>
-     * @param request
-     * @param response
-     * @param filterChain
-     * @throws ServletException
-     * @throws IOException
+    /**
+     * <h5>Se ejecuta en cada request HTTP.</h5>
+     * Validad estructura del Token
+     * Extrae el Token
+     *
      */
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -59,28 +59,43 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String header = request.getHeader(HEADER_STRING);
         String username = null;
         String authToken = null;
+
+        // - Que exista el header && Que empieze con ("Bearer").
+        //-> Elimina el "Bearer" y deja solo el JWT.
         if (header != null && header.startsWith(TOKEN_PREFIX)) {
-            authToken = header.replace(TOKEN_PREFIX,"");
+            authToken = header.replace(TOKEN_PREFIX, "");
             try {
                 username = jwtTokenUtil.getUsernameFromToken(authToken);
             } catch (IllegalArgumentException e) {
                 logger.error("An error occurred while fetching Username from Token", e);
             } catch (ExpiredJwtException e) {
                 logger.warn("The token has expired", e);
-            } catch(SignatureException e){
+            } catch (SignatureException e) {
                 logger.error("Authentication Failed. Username or Password not valid.");
             }
         } else {
             logger.warn("Couldn't find bearer string, header will be ignored");
         }
+        // Verificar autenticación previa
+        // Evita re-autenticar si ya existe autenticación en el contexto.
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
+            // Verifica que el token no esté expirado, que coincida con el usuario.
             if (jwtTokenUtil.validateToken(authToken, userDetails)) {
-                UsernamePasswordAuthenticationToken authentication = jwtTokenUtil.getAuthenticationToken(authToken, SecurityContextHolder.getContext().getAuthentication(), userDetails);
+                // Representa al usuario autenticado dentro de Spring Security.
+                UsernamePasswordAuthenticationToken authentication = jwtTokenUtil.getAuthenticationToken(
+                        authToken,
+                        SecurityContextHolder
+                                .getContext()
+                                .getAuthentication(),
+                        userDetails
+                );
+                // Añade info como: IP, sesión
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 logger.info("authenticated user " + username + ", setting security context");
+                // A partir de acá, el usuario queda autenticado en toda la app.
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         }

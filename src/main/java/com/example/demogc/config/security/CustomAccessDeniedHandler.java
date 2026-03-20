@@ -16,7 +16,11 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-
+/**
+ * <h5>Handler personalizado para manejar errores de autorización.</h5>
+ * <p>Se ejecuta cuando un usuario autenticado intenta acceder
+ * a un recurso para el cual NO tiene permisos.</p>
+ */
 @Component
 public class CustomAccessDeniedHandler implements AccessDeniedHandler {
 
@@ -27,7 +31,7 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
                        HttpServletResponse response,
                        AccessDeniedException e) throws IOException, ServletException {
 
-        logger.warn("Ejecutando CustomAccessDeniedHandler");
+        logger.info("Ejecutando CustomAccessDeniedHandler");
 
         response.setStatus(HttpStatus.FORBIDDEN.value());
         response.setContentType("application/json");

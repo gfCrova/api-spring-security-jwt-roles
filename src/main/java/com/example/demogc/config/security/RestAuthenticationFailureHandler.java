@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jspecify.annotations.NonNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -16,6 +17,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * <h5>Handler personalizado para manejar fallos de autenticación.</h5>
+ * <p>Se ejecuta cuando un usuario intenta autenticarse (login) pero las credenciales son inválidas.</p>
+ */
 @Component
 public class RestAuthenticationFailureHandler implements AuthenticationFailureHandler {
 
@@ -25,6 +30,7 @@ public class RestAuthenticationFailureHandler implements AuthenticationFailureHa
                                         @NonNull AuthenticationException e) throws IOException, ServletException {
 
         response.setStatus(HttpStatus.FORBIDDEN.value());
+        response.setContentType("application/json");
 
         Map<String, Object> data = new HashMap<>();
         data.put("timestamp", new Date());

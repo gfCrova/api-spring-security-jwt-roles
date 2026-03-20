@@ -2,6 +2,7 @@ package com.example.demogc.config.security.jwt;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -80,7 +81,7 @@ public class TokenProvider implements Serializable {
      *      <li>3. Devuelve el resultado</li>
      * </ul>
      */
-    public <T> T getClaimFromToken(String token, Function<Claims, T> claimsResolver) {
+    public <T> T getClaimFromToken(String token, @NonNull Function<Claims, T> claimsResolver) {
         final Claims claims = getAllClaimsFromToken(token);
         return claimsResolver.apply(claims);
     }
@@ -110,7 +111,7 @@ public class TokenProvider implements Serializable {
      *      <li>3. Retorna: true → expirado, false → válido</li>
      * </ul>
      */
-    private Boolean isTokenExpired(String token) {
+    private @NonNull Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationDateFromToken(token);
         return expiration.before(new Date());
     }
@@ -123,7 +124,7 @@ public class TokenProvider implements Serializable {
      *      <li>3. Compactar token</li>
      * </ul>
      */
-    public String generateToken(Authentication authentication) {
+    public String generateToken(@NonNull Authentication authentication) {
         // 1. Convierte roles a string: "ROLE_USER,ROLE_ADMIN"
         String authorities = authentication.getAuthorities()
                 .stream()
@@ -149,7 +150,7 @@ public class TokenProvider implements Serializable {
      * </ul>
      * <p>Resultado: Retorna true si: El usuario coincide && El token NO está expirado</p>
      */
-    public Boolean validateToken(String token, UserDetails userDetails) {
+    public Boolean validateToken(String token, @NonNull UserDetails userDetails) {
         final String username = getUsernameFromToken(token);
         return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
