@@ -1,12 +1,8 @@
-# API Spring Security JWT Roles
+# API JWT Roles
 
 API REST construida con Spring Boot para autenticacion con JWT, autorizacion por roles y gestion basica de usuarios.
 
-## Descripcion
-
-El proyecto expone un flujo simple de registro, login y acceso protegido a endpoints administrativos. Usa Spring Security, JWT, JPA y PostgreSQL como base de persistencia principal.
-
-Tambien incluye mejoras de robustez y seguridad:
+## Incluye mejoras de robustez y seguridad:
 
 - Validacion de entrada en login y registro.
 - Passwords cifrados con BCrypt.
@@ -115,7 +111,7 @@ APP_ALLOWED_ORIGINS=http://localhost:3000
 
 Configuracion principal incluida:
 
-- PostgreSQL en `jdbc:postgresql://localhost:5432/demo_gc_db`
+- PostgreSQL en `jdbc:postgresql://localhost:5432/jwt_roles_db`
 - `ddl-auto=update`
 - inicializacion SQL activa para sembrar roles
 - expiracion JWT configurable
@@ -139,7 +135,7 @@ cd api-spring-security-jwt-roles
 
 ### 2. Configurar PostgreSQL
 
-Crea una base llamada `demo_gc_db` y define las variables de entorno necesarias.
+Crea una base llamada `jwt_roles_db` y define las variables de entorno necesarias.
 
 ### 3. Ejecutar la aplicacion
 
@@ -173,10 +169,10 @@ Body:
 
 ```json
 {
-  "username": "gianc",
-  "email": "gianc@example.com",
+  "username": "user1",
+  "email": "user1@example.com",
   "password": "Secret123",
-  "name": "Giancarlo",
+  "name": "User 1",
   "phone": 123456789,
   "businessTitle": "Backend Developer"
 }
@@ -192,7 +188,7 @@ Body:
 
 ```json
 {
-  "username": "gianc",
+  "username": "user1",
   "password": "Secret123"
 }
 ```
