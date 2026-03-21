@@ -57,6 +57,31 @@ El endpoint `/api/register` crea usuarios con rol `USER` por defecto.
 
 No se concede el rol `ADMIN` automaticamente por dominio de email ni por datos controlados por el cliente.
 
+### Bootstrap del primer ADMIN
+
+Puedes crear el primer administrador de forma segura al arrancar la aplicacion usando variables de entorno. Solo se crea si:
+
+- `ADMIN_BOOTSTRAP_ENABLED=true`
+- no existe todavia ningun usuario con rol `ADMIN`
+
+Variables:
+
+```bash
+ADMIN_BOOTSTRAP_ENABLED=true
+ADMIN_USERNAME=superadmin
+ADMIN_EMAIL=superadmin@example.com
+ADMIN_PASSWORD=ChangeMeNow123!
+ADMIN_NAME=Administrador Inicial
+ADMIN_PHONE=123456789
+ADMIN_BUSINESS_TITLE=Platform Administrator
+```
+
+Despues del primer arranque, la recomendacion es desactivar:
+
+```bash
+ADMIN_BOOTSTRAP_ENABLED=false
+```
+
 ### Login
 
 El endpoint `/api/authentication` autentica credenciales y devuelve un token JWT.
@@ -197,6 +222,22 @@ Requiere `ROLE_ADMIN`.
 `DELETE /api/users/{id}`
 
 Requiere `ROLE_ADMIN`.
+
+### Actualizar roles de un usuario
+
+`PATCH /api/users/{id}/roles`
+
+Requiere `ROLE_ADMIN`.
+
+Body:
+
+```json
+{
+  "roles": ["ADMIN", "USER"]
+}
+```
+
+Este endpoint es la via correcta para promover o degradar privilegios. Un `USER` no puede autoasignarse roles.
 
 ## Respuestas de error
 
