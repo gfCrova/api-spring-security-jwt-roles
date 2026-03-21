@@ -256,17 +256,6 @@ Los errores ahora devuelven un formato JSON consistente:
 }
 ```
 
-## Problemas corregidos en esta revision
-
-- Se elimino una escalacion insegura de privilegios basada en el dominio del email.
-- Se corrigio la propiedad JWT mal formada en la configuracion.
-- Se fortalecieron validaciones de DTOs y respuestas de error.
-- Se sustituyo CORS manual por configuracion centralizada y controlable.
-- Se corrigio el `main` publico de la aplicacion.
-- Se estandarizaron nombres de tablas y restricciones unicas.
-- Se actualizaron dependencias de testing y el wrapper de Maven para este entorno.
-- Se aislaron los tests con H2 para reducir fragilidad.
-
 ## Mejoras futuras recomendadas
 
 - Añadir refresh tokens y revocacion de sesiones.
