@@ -5,17 +5,23 @@ import com.example.demogc.dto.UserResponseDTO;
 import com.example.demogc.model.User;
 import org.springframework.stereotype.Component;
 
+import java.util.stream.Collectors;
+
 @Component
 public class UserMapper {
 
     public UserResponseDTO toResponseDTO(User user){
         UserResponseDTO userDTO = new UserResponseDTO();
+        userDTO.setId(user.getId());
         userDTO.setUsername(user.getUsername());
         userDTO.setEmail(user.getEmail());
         userDTO.setName(user.getName());
         userDTO.setPhone(user.getPhone());
         userDTO.setBusinessTitle(user.getBusinessTitle());
-        userDTO.setRoles(user.getRoles());
+        userDTO.setRoles(user.getRoles()
+                .stream()
+                .map(role -> role.getName())
+                .collect(Collectors.toSet()));
         return userDTO;
     }
 

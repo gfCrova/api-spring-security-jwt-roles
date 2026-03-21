@@ -2,11 +2,14 @@ package com.example.demogc.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Data
+@Table(name = "roles", uniqueConstraints = @UniqueConstraint(columnNames = "name"))
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class Role {
@@ -14,9 +17,9 @@ public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column
+    @Column(nullable = false, length = 50)
     private String name;
-    @Column
+    @Column(nullable = false, length = 150)
     private String description;
 
 }

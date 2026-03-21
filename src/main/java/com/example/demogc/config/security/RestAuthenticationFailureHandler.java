@@ -1,46 +1,45 @@
 package com.example.demogc.config.security;
 
+import com.example.demogc.exception.ApiErrorResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.jspecify.annotations.NonNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Date;
-import java.util.HashMap;
+import java.time.Instant;
 import java.util.Map;
 
-/**
- * <h5>Handler personalizado para manejar fallos de autenticación.</h5>
- * <p>Se ejecuta cuando un usuario intenta autenticarse (login) pero las credenciales son inválidas.</p>
- */
 @Component
 public class RestAuthenticationFailureHandler implements AuthenticationFailureHandler {
 
-    @Override
-    public void onAuthenticationFailure(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        @NonNull AuthenticationException e) throws IOException, ServletException {
+    private final ObjectMapper objectMapper;
 
-        response.setStatus(HttpStatus.FORBIDDEN.value());
+    public RestAuthenticationFailureHandler(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
+
+    @Override
+    public void onAuthenticationFailure(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException exception
+    ) throws IOException {
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType("application/json");
 
-        Map<String, Object> data = new HashMap<>();
-        data.put("timestamp", new Date());
-        data.put("status",HttpStatus.FORBIDDEN.value());
-        data.put("message", "Access Denied, Bad Credentials!! Try again!");
-        data.put("path", request.getRequestURL().toString());
+        ApiErrorResponse body = new ApiErrorResponse(
+                Instant.now(),
+                HttpStatus.UNAUTHORIZED.value(),
+                HttpStatus.UNAUTHORIZED.getReasonPhrase(),
+                "Invalid username or password",
+                request.getRequestURI(),
+                Map.of()
+        );
 
-        OutputStream out = response.getOutputStream();
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(out, data);
-        out.flush();
+        objectMapper.writeValue(response.getOutputStream(), body);
     }
 }

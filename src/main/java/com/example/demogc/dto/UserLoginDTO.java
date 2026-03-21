@@ -1,5 +1,6 @@
 package com.example.demogc.dto;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,6 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserLoginDTO {
 
+    @NotBlank
     private String username;
+
+    @NotBlank
     private String password;
 }
