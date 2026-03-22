@@ -20,5 +20,6 @@ public class UserResponseDTO {
     private Long phone;
     @Schema(example = "Backend Developer")
     private String businessTitle;
+    @Schema(example = "[\"ADMIN\", \"USER\"]")
     private Set<String> roles;
 }
