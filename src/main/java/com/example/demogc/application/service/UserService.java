@@ -1,6 +1,8 @@
 package com.example.demogc.application.service;
 
+import com.example.demogc.application.dto.ChangePasswordDTO;
 import com.example.demogc.application.dto.UserCreateDTO;
+import com.example.demogc.application.dto.UserProfileUpdateDTO;
 import com.example.demogc.application.dto.UserResponseDTO;
 import com.example.demogc.application.dto.UserRoleUpdateDTO;
 
@@ -12,6 +14,9 @@ public interface UserService {
     UserResponseDTO getUserByUsername(String username);
     List<UserResponseDTO> getAllUsers();
     UserResponseDTO saveUser(UserCreateDTO userDTO);
+    UserResponseDTO updateOwnProfile(String username, UserProfileUpdateDTO request);
+    void changeOwnPassword(String username, ChangePasswordDTO request);
+    void deleteOwnAccount(String username);
     UserResponseDTO updateUserRoles(Long id, UserRoleUpdateDTO request);
     void deleteUserById(Long id);
 }

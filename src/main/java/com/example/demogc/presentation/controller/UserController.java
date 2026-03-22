@@ -1,6 +1,8 @@
 package com.example.demogc.presentation.controller;
 
+import com.example.demogc.application.dto.ChangePasswordDTO;
 import com.example.demogc.application.dto.UserCreateDTO;
+import com.example.demogc.application.dto.UserProfileUpdateDTO;
 import com.example.demogc.application.dto.UserResponseDTO;
 import com.example.demogc.application.dto.UserRoleUpdateDTO;
 import com.example.demogc.application.service.UserService;
@@ -39,6 +41,32 @@ public class UserController {
     @GetMapping("/users/me")
     public ResponseEntity<UserResponseDTO> getMyProfile(Authentication authentication) {
         return ResponseEntity.ok(userService.getUserByUsername(authentication.getName()));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/users/me")
+    public ResponseEntity<UserResponseDTO> updateMyProfile(
+            Authentication authentication,
+            @Valid @RequestBody UserProfileUpdateDTO request
+    ) {
+        return ResponseEntity.ok(userService.updateOwnProfile(authentication.getName(), request));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @PatchMapping("/users/me/password")
+    public ResponseEntity<Void> changeMyPassword(
+            Authentication authentication,
+            @Valid @RequestBody ChangePasswordDTO request
+    ) {
+        userService.changeOwnPassword(authentication.getName(), request);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/users/me")
+    public ResponseEntity<Void> deleteMyAccount(Authentication authentication) {
+        userService.deleteOwnAccount(authentication.getName());
+        return ResponseEntity.noContent().build();
     }
 
     @PreAuthorize("hasRole('ADMIN')")

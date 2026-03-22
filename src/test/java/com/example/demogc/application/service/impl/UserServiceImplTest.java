@@ -1,6 +1,8 @@
 package com.example.demogc.application.service.impl;
 
+import com.example.demogc.application.dto.ChangePasswordDTO;
 import com.example.demogc.application.dto.UserCreateDTO;
+import com.example.demogc.application.dto.UserProfileUpdateDTO;
 import com.example.demogc.application.dto.UserResponseDTO;
 import com.example.demogc.application.dto.UserRoleUpdateDTO;
 import com.example.demogc.application.mapper.UserMapper;
@@ -113,6 +115,103 @@ class UserServiceImplTest {
         UserResponseDTO result = userService.getUserByUsername("gian");
 
         assertThat(result.getUsername()).isEqualTo("gian");
+    }
+
+    @Test
+    void updateOwnProfileUpdatesEditableFields() {
+        User user = new User();
+        user.setId(10L);
+        user.setUsername("gian");
+        user.setEmail("old@example.com");
+        user.setName("Old Name");
+        user.setPhone(123L);
+        user.setBusinessTitle("Old Title");
+
+        UserProfileUpdateDTO request = new UserProfileUpdateDTO();
+        request.setEmail("new@example.com");
+        request.setName("New Name");
+        request.setPhone(456L);
+        request.setBusinessTitle("New Title");
+
+        UserResponseDTO responseDTO = new UserResponseDTO();
+        responseDTO.setEmail("new@example.com");
+        responseDTO.setName("New Name");
+
+        when(userRepository.findByUsername("gian")).thenReturn(java.util.Optional.of(user));
+        when(userRepository.existsByEmail("new@example.com")).thenReturn(false);
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userMapper.toResponseDTO(any(User.class))).thenReturn(responseDTO);
+
+        UserResponseDTO result = userService.updateOwnProfile("gian", request);
+
+        assertThat(result.getEmail()).isEqualTo("new@example.com");
+        assertThat(user.getName()).isEqualTo("New Name");
+        assertThat(user.getPhone()).isEqualTo(456L);
+        assertThat(user.getBusinessTitle()).isEqualTo("New Title");
+    }
+
+    @Test
+    void changeOwnPasswordReplacesStoredHashWhenCurrentPasswordMatches() {
+        User user = new User();
+        user.setUsername("gian");
+        user.setPassword(passwordEncoder.encode("oldPassword123"));
+
+        ChangePasswordDTO request = new ChangePasswordDTO();
+        request.setCurrentPassword("oldPassword123");
+        request.setNewPassword("newPassword123");
+
+        when(userRepository.findByUsername("gian")).thenReturn(java.util.Optional.of(user));
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        userService.changeOwnPassword("gian", request);
+
+        assertThat(passwordEncoder.matches("newPassword123", user.getPassword())).isTrue();
+    }
+
+    @Test
+    void deleteOwnAccountDeletesAuthenticatedUserRecord() {
+        User user = new User();
+        user.setUsername("gian");
+        user.setRoles(Set.of(new Role(1L, "USER", "User role")));
+
+        when(userRepository.findByUsername("gian")).thenReturn(java.util.Optional.of(user));
+
+        userService.deleteOwnAccount("gian");
+
+        verify(userRepository).delete(user);
+    }
+
+    @Test
+    void deleteOwnAccountRejectsDeletingLastAdmin() {
+        User user = new User();
+        user.setUsername("admin");
+        user.setRoles(Set.of(new Role(1L, "ADMIN", "Admin role")));
+
+        when(userRepository.findByUsername("admin")).thenReturn(java.util.Optional.of(user));
+        when(userRepository.countByRoles_Name("ADMIN")).thenReturn(1L);
+
+        assertThatThrownBy(() -> userService.deleteOwnAccount("admin"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("The last ADMIN user cannot be deleted");
+    }
+
+    @Test
+    void updateUserRolesRejectsRemovingAdminRoleFromLastAdmin() {
+        User user = new User();
+        user.setId(7L);
+        user.setUsername("admin");
+        user.setRoles(Set.of(new Role(1L, "ADMIN", "Admin role")));
+
+        UserRoleUpdateDTO request = new UserRoleUpdateDTO();
+        request.setRoles(Set.of("USER"));
+
+        when(userRepository.findById(7L)).thenReturn(java.util.Optional.of(user));
+        when(roleService.findByName("USER")).thenReturn(new Role(2L, "USER", "User role"));
+        when(userRepository.countByRoles_Name("ADMIN")).thenReturn(1L);
+
+        assertThatThrownBy(() -> userService.updateUserRoles(7L, request))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("The last ADMIN user must keep the ADMIN role");
     }
 
     @Test

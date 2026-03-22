@@ -15,7 +15,9 @@ import java.util.Set;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -52,5 +54,50 @@ class UserControllerSecurityTest {
         mockMvc.perform(get("/api/users")
                         .with(user("regular-user").roles("USER")))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void userCanUpdateOwnProfile() throws Exception {
+        UserResponseDTO response = new UserResponseDTO();
+        response.setUsername("regular-user");
+        response.setEmail("new@example.com");
+
+        when(userService.updateOwnProfile(org.mockito.ArgumentMatchers.eq("regular-user"), org.mockito.ArgumentMatchers.any()))
+                .thenReturn(response);
+
+        mockMvc.perform(patch("/api/users/me")
+                        .with(user("regular-user").roles("USER"))
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "email": "new@example.com",
+                                  "name": "Regular User",
+                                  "phone": 123456789,
+                                  "businessTitle": "Developer"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("new@example.com"));
+    }
+
+    @Test
+    void userCanChangeOwnPassword() throws Exception {
+        mockMvc.perform(patch("/api/users/me/password")
+                        .with(user("regular-user").roles("USER"))
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "currentPassword": "oldPassword123",
+                                  "newPassword": "newPassword123"
+                                }
+                                """))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void userCanDeleteOwnAccount() throws Exception {
+        mockMvc.perform(delete("/api/users/me")
+                        .with(user("regular-user").roles("USER")))
+                .andExpect(status().isNoContent());
     }
 }

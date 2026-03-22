@@ -211,6 +211,50 @@ Respuesta:
 
 Requiere `ROLE_ADMIN`.
 
+### Obtener mi perfil
+
+`GET /api/users/me`
+
+Disponible para cualquier usuario autenticado.
+
+### Actualizar mi perfil
+
+`PATCH /api/users/me`
+
+Disponible para cualquier usuario autenticado.
+
+Body:
+
+```json
+{
+  "email": "nuevo@email.com",
+  "name": "Nombre Actualizado",
+  "phone": 123456789,
+  "businessTitle": "Backend Engineer"
+}
+```
+
+### Cambiar mi contraseña
+
+`PATCH /api/users/me/password`
+
+Disponible para cualquier usuario autenticado.
+
+Body:
+
+```json
+{
+  "currentPassword": "Secret123",
+  "newPassword": "Secret456"
+}
+```
+
+### Eliminar mi cuenta
+
+`DELETE /api/users/me`
+
+Disponible para cualquier usuario autenticado. Elimina la cuenta asociada al token actual.
+
 ### Obtener usuario por id
 
 `GET /api/users/{id}`
