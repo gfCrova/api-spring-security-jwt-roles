@@ -163,6 +163,15 @@ Los tests usan un perfil `test` con H2 en memoria, por lo que no requieren Postg
 ./mvnw.cmd test
 ```
 
+## OpenAPI y Swagger UI
+
+La documentacion interactiva queda disponible en:
+
+- `http://localhost:8080/swagger-ui/index.html`
+- `http://localhost:8080/v3/api-docs`
+
+Swagger UI soporta autenticacion Bearer JWT. Primero autentica en `/api/authentication`, copia el token y luego usa el boton `Authorize`.
+
 ## Endpoints
 
 ### Registro

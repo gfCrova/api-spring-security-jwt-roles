@@ -3,6 +3,12 @@ package com.example.demogc.presentation.controller;
 import com.example.demogc.application.dto.AuthToken;
 import com.example.demogc.application.dto.UserLoginDTO;
 import com.example.demogc.infrastructure.security.TokenProvider;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Authentication", description = "Endpoints de login y generacion de JWT")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -28,21 +35,26 @@ public class AuthController {
         this.jwtTokenUtil = jwtTokenUtil;
     }
 
+    @Operation(summary = "Autenticar usuario", description = "Valida credenciales y devuelve un token JWT Bearer.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Autenticacion exitosa",
+                    content = @Content(schema = @Schema(implementation = AuthToken.class))),
+            @ApiResponse(responseCode = "400", description = "Payload invalido"),
+            @ApiResponse(responseCode = "401", description = "Credenciales invalidas")
+    })
     @PostMapping("/authentication")
     public ResponseEntity<AuthToken> login(@Valid @RequestBody UserLoginDTO loginUser) throws AuthenticationException {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginUser.getUsername(),
+                        loginUser.getPassword()
+                )
+        );
 
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            loginUser.getUsername(),
-                            loginUser.getPassword()
-                    )
-            );
+        String token = jwtTokenUtil.generateToken(authentication);
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-
-            String token = jwtTokenUtil.generateToken(authentication);
-
-            return ResponseEntity.ok(new AuthToken(token));
+        return ResponseEntity.ok(new AuthToken(token));
     }
 }
