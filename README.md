@@ -288,23 +288,6 @@ Body:
 
 Este endpoint es la via correcta para promover o degradar privilegios. Un `USER` no puede autoasignarse roles.
 
-## Respuestas de error
-
-Los errores ahora devuelven un formato JSON consistente:
-
-```json
-{
-  "timestamp": "2026-03-21T00:00:00Z",
-  "status": 400,
-  "error": "Bad Request",
-  "message": "Validation error",
-  "path": "/api/register",
-  "validationErrors": {
-    "email": "must be a well-formed email address"
-  }
-}
-```
-
 ## Mejoras futuras recomendadas
 
 - Añadir refresh tokens y revocacion de sesiones.
